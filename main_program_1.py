@@ -161,5 +161,33 @@ result_total_pending_alignment = Alignment(horizontal='right',vertical='bottom',
 result_sheet.cell(row = result_current_row, column = 1).alignment = result_total_pending_alignment
 
 """ Save the result workbook to result excel path """
-result_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\result_excel.xlsx"
+result_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\results\\result_excel.xlsx"
 result_workbook.save(result_excel_path)
+
+""" Converting excel result sheet to PDF format """
+# set path for the pdf file
+result_pdf_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\results\\result_pdf.pdf"
+
+def print_excel_worksheet_to_pdf(i_sz_excel_path, i_sz_ws_name, i_sz_pdf_path):
+    excel = win32com.client.Dispatch("Excel.Application")
+
+    excel.Visible = False   #Keep the excel sheet closed
+    excel.DisplayAlerts = False  #"Do you want to over write it?" Will not Pop up
+
+    try:
+        wb_source = excel.Workbooks.Open(i_sz_excel_path)
+
+        ws_source = wb_source.Worksheets(i_sz_ws_name)
+        ws_source.PageSetup.Orientation = 2 # change orientation to landscape, to fit all the columns in an A4 paper
+        ws_source.Select()
+
+        wb_source.ActiveSheet.ExportAsFixedFormat(0, i_sz_pdf_path)
+    except Exception as e:
+        print(e)
+
+    excel.Application.Quit()
+#converts the result excel file to pdf file
+print_excel_worksheet_to_pdf(result_excel_path, 1, result_pdf_path)
+
+# print statement for feedback purpose
+print("PDF generated")
