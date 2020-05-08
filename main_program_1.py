@@ -6,7 +6,11 @@
 import openpyxl
 from openpyxl.styles import Font
 from openpyxl.styles import Alignment
+import win32com.client   #import win32api for pdf conversion
 import datetime
+
+import locale # for printing amount in indian notation
+locale.setlocale(locale.LC_ALL, 'en_IN.utf8') # set locale on the computer if not working
 
 # create a new Excel workbook to store the results
 result_workbook = openpyxl.Workbook()
@@ -23,7 +27,7 @@ result_sheet.cell(row = 1, column = 1).value = 'PENDING PAYMENTS : '+ current_da
 # give the column names for the result sheet   (column names are in the 2nd row)
 # Date, Inv No, Retailor Name, Address, Amount, Disc., Received, PENDING  :(total 8 columns)
 result_sheet.cell(row = 2, column = 1).value="Date"
-result_sheet.cell(row = 2, column = 2).value="Inv No."
+result_sheet.cell(row = 2, column = 2).value="Inv.No"
 result_sheet.cell(row = 2, column = 3).value="Retailor Name"
 result_sheet.cell(row = 2, column = 4).value="Address"
 result_sheet.cell(row = 2, column = 5).value="Amount"
@@ -43,6 +47,9 @@ source_sheetnames=sorce_workbook.sheetnames # this list contains sheetnames A to
 # rn changed to result_current_row
 result_current_row = 3  # inside the result sheet, the rows used for storing the cell values starts from 3,
 # since rows 1 & 2 are used for main title & column headings
+
+# create a variable to keep track of the total pending amount
+result_total_pending = 0 # initialize it to 0
 
 """ this code below, has to be looked upon later """
 # for amt and rmax code, it is to know from which row there is no str fields in received column of each sheet. eg: 23450+3200 is str field
@@ -92,15 +99,24 @@ for character in source_sheetnames:
                 result_sheet.cell(row = result_current_row, column = 7).value = source_cell_received # Received
                 result_sheet.cell(row = result_current_row, column = 8).value = source_cell_pending # PENDING
 
+                # update total pending amount
+                result_total_pending = source_cell_pending + result_total_pending
+
                 # after writing all the columns in result sheet, increment the result_current_row for moving to the next row in result sheet
                 result_current_row += 1
 
-
-            """ above loops and if statements are properly maintained """
+        """ above loops and if statements are properly maintained """
 
     i += 1       # for rlst , might need to change this
 
-# print statement just for feedback if the complete extraction and writing process was successfully finished
+# move the total pending amount to the bottom of the result sheet
+# at the bottom of result sheet, merge cells from A(result_current_row) to H(result_current_row), i.e: (row: result_current_row, col: 1-8)
+result_total_pending_coordinates = ("A"+str(result_current_row)+":H"+str(result_current_row)) # the coordinates must be in the same string format as eg:('A45:H45')
+result_sheet.merge_cells(result_total_pending_coordinates) # (i.e. a rectangular field is created) for the total pending amount
+# writes the total pending amount in indian notation
+result_sheet.cell(row = result_current_row, column = 1).value = 'TOTAL PENDING AMOUNT : Rs '+ (locale.format_string("%d", result_total_pending, grouping=True))
+
+# print statement just for feedback if the whole extraction and writing process was successfully completed
 print("   SUCCESS ! ")
 
 """ below code is for formatting and styling the result sheet """
@@ -109,21 +125,25 @@ print("   SUCCESS ! ")
 result_sheet.row_dimensions[1].height = 30
 # set the height of the 2nd row for column headings
 result_sheet.row_dimensions[2].height = 50
+# set the height of the current row(last row) for total pending amount
+result_sheet.row_dimensions[result_current_row].height = 30
 
 # set the width of each column ('A' means 1st column, 'B' 2nd column and so on...)
 result_sheet.column_dimensions['A'].width = 11  # Date column
-result_sheet.column_dimensions['B'].width = 11  # Inv. no column
-result_sheet.column_dimensions['C'].width = 40  # Retailor name column
-result_sheet.column_dimensions['D'].width = 30  # Address column
-result_sheet.column_dimensions['E'].width = 14  # Amount column
-result_sheet.column_dimensions['F'].width = 13  # Discount column
+result_sheet.column_dimensions['B'].width = 10  # Inv. no column
+result_sheet.column_dimensions['C'].width = 30  # Retailor name column
+result_sheet.column_dimensions['D'].width = 20  # Address column
+result_sheet.column_dimensions['E'].width = 13  # Amount column
+result_sheet.column_dimensions['F'].width = 7  # Discount column
 result_sheet.column_dimensions['G'].width = 14  # Received column
 result_sheet.column_dimensions['H'].width = 14  # PENDING column
 
 # set the main title font style to bold
 result_sheet.cell(row = 1, column = 1).font = Font(size = 22, bold = True)
+# set the "total amount pending" font style to bold
+result_sheet.cell(row = result_current_row, column = 1).font = Font(size = 22, bold = True)
 
-#font size for each coloumn
+# set font size for each coloumn
 result_sheet.cell(row = 2, column = 1).font = Font(size = 18) # Date column
 result_sheet.cell(row = 2, column = 2).font = Font(size = 18) # Inv. no column
 result_sheet.cell(row = 2, column = 3).font = Font(size = 18) # Retailor name column
@@ -136,6 +156,9 @@ result_sheet.cell(row = 2, column = 8).font = Font(size = 18, bold = True, color
 # set centre alignment for main title
 title_alignment = Alignment(horizontal='center',vertical='bottom',text_rotation=0,wrap_text=False,shrink_to_fit=True,indent=0)
 result_sheet.cell(row = 1, column = 1).alignment = title_alignment
+# set right alignment for "total amount pending"
+result_total_pending_alignment = Alignment(horizontal='right',vertical='bottom',text_rotation=0,wrap_text=False,shrink_to_fit=True,indent=0)
+result_sheet.cell(row = result_current_row, column = 1).alignment = result_total_pending_alignment
 
 """ Save the result workbook to result excel path """
 result_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\result_excel.xlsx"
