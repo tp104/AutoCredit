@@ -35,8 +35,9 @@ result_sheet.cell(row = 2, column = 6).value="Disc."
 result_sheet.cell(row = 2, column = 7).value="Received"
 result_sheet.cell(row = 2, column = 8).value="PENDING"
 
-# Get the location of the source excel file
-source_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\test.xlsx"
+""" Get the location of the source excel file """
+#source_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\test.xlsx"
+source_excel_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\original.xlsx"
 # double '\\' for path is used, since single '\' is used for escape sequencing
 
 # load the source excel workbook from the given source path
@@ -53,7 +54,7 @@ result_total_pending = 0 # initialize it to 0
 
 """ this code below, has to be looked upon later """
 # for amt and rmax code, it is to know from which row there is no str fields in received column of each sheet. eg: 23450+3200 is str field
-rlst=[290,320,21,25,89,87,91,2,2,297,355,2,290,67,2,230,2,65,360,123,2,2,2,2,2,2] # 26 values for each sheet A to Z
+rlst=[290,320,21,25,85,80,91,2,2,297,351,2,290,66,2,230,2,65,360,121,2,2,2,2,2,2] # 26 values for each sheet A to Z
 i=0 # for indexing rlst
 """ ............................................. """
 
@@ -106,7 +107,7 @@ for character in source_sheetnames:
                 result_current_row += 1
 
         """ above loops and if statements are properly maintained """
-
+    print(character)
     i += 1       # for rlst , might need to change this
 
 # move the total pending amount to the bottom of the result sheet
@@ -166,7 +167,7 @@ result_workbook.save(result_excel_path)
 
 """ Converting excel result sheet to PDF format """
 # set path for the pdf file
-result_pdf_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\results\\result_pdf.pdf"
+result_pdf_path = "C:\\Users\\thoma\\OneDrive\\Desktop\\excel python\\results\\result1_pdf.pdf"
 
 def print_excel_worksheet_to_pdf(i_sz_excel_path, i_sz_ws_name, i_sz_pdf_path):
     excel = win32com.client.Dispatch("Excel.Application")
