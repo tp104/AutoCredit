@@ -1,0 +1,3 @@
+//sender's email address
+//password of sender's email
+//receiver's email address
